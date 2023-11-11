@@ -1,0 +1,11 @@
+Model Information:
+* title:	3D Low Poly Tree 3D Model - Game Ready model
+* source:	https://sketchfab.com/3d-models/3d-low-poly-tree-3d-model-game-ready-model-13603cb1253244cba62cafe10fe77725
+* author:	Vercion 3D (https://sketchfab.com/Vercion3D)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "3D Low Poly Tree 3D Model - Game Ready model" (https://sketchfab.com/3d-models/3d-low-poly-tree-3d-model-game-ready-model-13603cb1253244cba62cafe10fe77725) by Vercion 3D (https://sketchfab.com/Vercion3D) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

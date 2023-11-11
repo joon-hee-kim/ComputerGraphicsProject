@@ -58,10 +58,8 @@ export class MyCharacter {
       this._currentAnimationAction = this._animationMap["Armature|Dance"];
       this._currentAnimationAction.play();
       this._AnimRequestFrame = requestAnimationFrame(this.render.bind(this));
-
-      const box = new THREE.Box3().setFromObject(model);
+      
       this._scene.add(model);
-      this._model = model;
       // this._modelShadow = new ShadowMesh(this._model);
       // scene.add(this._modelShadow);
     });

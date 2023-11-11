@@ -27,7 +27,6 @@ export function createRoad(scene, x, y) {
 
     // 도로 메쉬를 씬에 추가
     scene.add(roadMesh);
-    console.log("tile create", roundX, roundY);
 
     // 생성된 도로 정보 반환
     return { mesh: roadMesh, x: Math.round(roundX), y: Math.round(roundY) };

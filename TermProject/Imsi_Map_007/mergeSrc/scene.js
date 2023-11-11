@@ -17,8 +17,9 @@ import { createStation } from "./Station.js";
 import { Train } from "./train.js";
 import { TREE } from "./Tree.js";
 import { STREETLIGHT } from "./StreetLight.js";
-import {FLOWER} from "./Flower.js";
+import { FLOWER } from "./Flower.js";
 import { BENCH } from "./Bench.js";
+import { CLOUD } from "./Cloud.js";
 
 /**
  * 3D 시뮬레이션의 주요 씬을 생성합니다.
@@ -47,6 +48,18 @@ let angle = 0;
 let radius = 700;
 let clock;
 
+// skybox 관련된 부분
+let sky;
+const effectController = {
+  turbidity: 10,
+  rayleigh: 3,
+  mieCoefficient: 0.005,
+  mieDirectionalG: 0.4,
+  elevation: 1,
+  azimuth: 90,
+  exposure: 0.7,
+};
+
 export function createScene() {
   // 씬 생성
   const scene = new THREE.Scene();
@@ -57,6 +70,8 @@ export function createScene() {
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.physicallyCorrectLights = true;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
   document.getElementById("render-target").appendChild(renderer.domElement);
 
   var camera = new THREE.PerspectiveCamera(
@@ -74,6 +89,7 @@ export function createScene() {
     const cityCount = 3; // 원하는 도시 개수로 조절
     const citySize = 100; // 원하는 도시 크기로 조절
     const cityInfo = [];
+    // 빌딩 생성 offset
     const Xlist = [-30, -40, -40];
     const Ylist = [-40, -10, 40];
     for (let i = 0; i < cityCount; i++) {
@@ -101,17 +117,14 @@ export function createScene() {
 
           // station 뒤 나무 생성
           for(let k = 0; k < 5; k++){
-            createTrees(offsetX + 20 + 5 * k , offsetY - 40);
+            createTrees(offsetX + 20 + 5 * k , offsetY - 40, 0);
           }
 
           // 빌딩 뒤 나무 생성
           for(let k = 0; k < 3; k++){
-            createTrees(offsetX - 40, offsetY - 45 + 5 * k);
+            createTrees(offsetX - 40, offsetY - 45 + 5 * k, 0);
           }
-          createTrees(offsetX - 47, offsetY + 7);
-
-
-
+          createTrees(offsetX - 47, offsetY + 7, 1);
 
           // 꽃과 벤치 생성
           createBenches(offsetX, offsetY + 45, 0);
@@ -124,8 +137,6 @@ export function createScene() {
 
           createBenches(offsetX - 47, offsetY, 2);
           createFlowers(offsetX - 45, offsetY);
-          
-          
 
           
         }
@@ -142,12 +153,10 @@ export function createScene() {
           name: `City ${i + 1}`,
           population: Math.floor(Math.random() * 1000000),
         });
-        console.log(StationList);
 
         updateInfoWindow(cityInfo);
 
         cityObject.mesh.position.set(offsetX, 0, offsetY);
-        console.log(cityObject.mesh);
 
         scene.add(cityObject.mesh);
       }
@@ -157,14 +166,20 @@ export function createScene() {
     camera.position.set(-2, 4, 10);
 
     initSky();
+    createClouds(500, 0);
+    createClouds(400, 100);
+    createClouds(300, 50);
+    createClouds(300, 0);
 
     setupLights(scene);
-
     // 여기에 다른 초기화 로직 추가 (도시 객체를 이용하여 씬 초기 상태 설정)
   }
+  function createClouds(x, y){
+    const CloudInstance = new CLOUD(scene, x, y);
+  }
 
-  function createTrees(x, y){
-    const TreeInstance = new TREE(scene, x, y);
+  function createTrees(x, y, k){
+    const TreeInstance = new TREE(scene, x, y, k);
     treeList.push(TreeInstance);
   }
 
@@ -182,26 +197,14 @@ export function createScene() {
   }
 
   function initSky() {
-    let sky = new Sky();
-    console.log(sky.position);
+    sky = new Sky();
     sky.position.set(100.0, 0.0, 100.0);
-    sky.scale.setScalar(50000);
+    sky.scale.setScalar(1000);
     scene.add(sky);
 
     let sun = new THREE.Vector3();
 
     /// GUI
-
-    const effectController = {
-      turbidity: 10,
-      rayleigh: 3,
-      mieCoefficient: 0.005,
-      mieDirectionalG: 0.9,
-      elevation: 5,
-      azimuth: 180,
-      exposure: renderer.toneMappingExposure,
-    };
-
     function guiChanged() {
       const uniforms = sky.material.uniforms;
       uniforms["turbidity"].value = effectController.turbidity;
@@ -213,8 +216,9 @@ export function createScene() {
       const theta = THREE.MathUtils.degToRad(effectController.azimuth);
 
       sun.setFromSphericalCoords(1, phi, theta);
-
       console.log(sun);
+      console.log(uniforms);
+
       uniforms["sunPosition"].value.copy(sun);
 
       renderer.toneMappingExposure = effectController.exposure;
@@ -238,23 +242,30 @@ export function createScene() {
     guiChanged();
   }
 
+  function moveSunUp(angle){
+    let sun2 = new THREE.Vector3();
+    sun2.set(radius * Math.cos(angle), radius * Math.sin(angle), 0);
+    sky.material.uniforms["sunPosition"].value.copy(sun2);
+  }
+
   function setupLights() {
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
 
     shadowLight = new THREE.DirectionalLight(0xf0f0f0, 3);
-    shadowLight.position.z = 100;
+    shadowLight.position.z = 0;
     shadowLight.target.position.set(0, 0, 0);
 
     shadowLight.castShadow = true;
-    shadowLight.shadow.mapSize.width = 3000;
-    shadowLight.shadow.mapSize.height = 3000;
+    shadowLight.shadow.mapSize.width = 5000;
+    shadowLight.shadow.mapSize.height = 5000;
     shadowLight.shadow.camera.top = 50;
-    shadowLight.shadow.camera.right = 150;
+    shadowLight.shadow.camera.right = 350;
     shadowLight.shadow.camera.bottom = -200;
-    shadowLight.shadow.camera.left = -150;
-    shadowLight.shadow.camera.near = 300;
-    shadowLight.shadow.camera.far = 1500;
+    shadowLight.shadow.camera.left = -350;
+    shadowLight.shadow.camera.near = 400;
+    shadowLight.shadow.camera.far = 900;
     shadowLight.shadow.radius = 5;
+    
     const shadowCameraHelper = new THREE.CameraHelper(
       shadowLight.shadow.camera
     );
@@ -285,7 +296,9 @@ export function createScene() {
   // 렌더링 루프 함수
   function render() {
     requestAnimationFrame(render);
-    animate();
+    if(myCharacter._start){
+      animate();
+    }
 
     // 렌더링 전에 정보창 업데이트
     const meshCount = scene.children.length;
@@ -427,10 +440,7 @@ export function createScene() {
       }
 
       if (activeToolId == "start") {
-        console.log("시작?");
         handleGameStart();
-      } else {
-        console.log("해제");
       }
 
       if (activeToolId == "stop") {
@@ -517,7 +527,6 @@ export function createScene() {
   };
 
   function handleGameStart(event) {
-    console.log("실행됐다");
     const tmp = new NewNPC(scene, camera, renderer, buildingList, StationList);
     NPCList.push(tmp);
   }
@@ -824,8 +833,6 @@ export function createScene() {
 
       // 여기에 road 생성 코드 추가 (createRoad 함수 호출 등)
       createStation(scene, x, y, StationList);
-
-      animate();
     }
   }
 
@@ -860,12 +867,17 @@ export function createScene() {
   }
 
   function animate(time) {
-    console.log("실행은 되니");
     angle += 0.001;
 
     // directionalLight의 위치 업데이트
     shadowLight.position.x = radius * Math.cos(angle);
     shadowLight.position.y = radius * Math.sin(angle);
+    if(sky !== undefined){
+      moveSunUp(angle);
+    }
+    
+    shadowLight.target.position.set(0, 0, 0);
+    shadowLight.shadow.camera.updateProjectionMatrix();
   }
 
   // 시작 함수
@@ -880,9 +892,5 @@ export function createScene() {
   scene.start = start;
   scene.stop = stop;
   scene.setActiveToolId = setActiveToolId;
-  // scene.onMouseDown = onMouseDown;
-  // scene.onMouseMove = onMouseMove;
-  // scene.onMouseUp = onMouseUp;
-  // scene 객체 반환
   return scene;
 }

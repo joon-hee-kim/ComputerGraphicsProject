@@ -47,7 +47,6 @@ export class MyCharacter {
 
       animationClips.forEach((clip) => {
         const name = clip.name;
-        // console.log("애님: " + name);
         animationsMap[name] = mixer.clipAction(clip);
       });
 

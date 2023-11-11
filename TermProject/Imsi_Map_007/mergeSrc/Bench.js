@@ -30,7 +30,7 @@ export class BENCH{
             this._model = gltf.scene;
             this._model.scale.set(selectedModel.scale, selectedModel.scale, selectedModel.scale);
 
-            this._model.position.set(this._roundX, 1, this._roundY);
+            this._model.position.set(this._roundX, 1.7, this._roundY);
             switch(this._index){
               case 0:
                 this._model.rotation.y = -Math.PI/2;
