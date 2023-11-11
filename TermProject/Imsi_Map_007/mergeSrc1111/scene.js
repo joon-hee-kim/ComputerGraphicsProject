@@ -307,12 +307,7 @@ export function createScene() {
   function moveSunUp(angle){
     let sun2 = new THREE.Vector3();
     sun2.set(radius * Math.cos(angle), radius * Math.sin(angle), 0);
-    // sky.material.uniforms["exposure"]
     sky.material.uniforms["sunPosition"].value.copy(sun2);
-    console.log(sky.material.opacity);
-    if(Math.sin(angle) < 0){
-      sky.material.opacity = 0;
-    }
   }
 
   function setupLights() {
