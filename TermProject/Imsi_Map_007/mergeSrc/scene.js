@@ -35,8 +35,9 @@ const treeList = [];
 const streetLight = [];
 
 var myCharacter;
+var firstCameraPosition = new THREE.Vector3(-50, 70, -50);
 var cameraPosition = new THREE.Vector3(-2, 4, 10);
-var targetPosition = new THREE.Vector3(-17, 12, 3); // 최종 목표 카메라 위치
+var targetPosition = new THREE.Vector3(-20, 20, -10); // 최종 목표 카메라 위치
 var animationDuration = 3000; // 이동 애니메이션의 지속 시간 (밀리초)
 var index = 0;
 var camera2D = false;
@@ -55,7 +56,7 @@ const effectController = {
   rayleigh: 3,
   mieCoefficient: 0.005,
   mieDirectionalG: 0.4,
-  elevation: 1,
+  elevation: 0,
   azimuth: 90,
   exposure: 0.7,
 };
@@ -137,8 +138,6 @@ export function createScene() {
 
           createBenches(offsetX - 47, offsetY, 2);
           createFlowers(offsetX - 45, offsetY);
-
-          
         }
         const cityObject = createCityObject(citySize);
 
@@ -163,7 +162,6 @@ export function createScene() {
     }
 
     myCharacter = new MyCharacter(scene, renderer, camera);
-    camera.position.set(-2, 4, 10);
 
     initSky();
     createClouds(500, 0);
@@ -172,7 +170,28 @@ export function createScene() {
     createClouds(300, 0);
 
     setupLights(scene);
+    setTimeout(initCameraAnimation, 2000); // 2초뒤에 카메라 이동
     // 여기에 다른 초기화 로직 추가 (도시 객체를 이용하여 씬 초기 상태 설정)
+  }
+
+  function initCameraAnimation(){
+    var startTimestamp = null;
+
+    function initCameraMove(timestamp) {
+      if (!startTimestamp) startTimestamp = timestamp;
+
+      var progress = (timestamp - startTimestamp) / 5000;
+
+      if (progress < 1) {
+        // 이동 중인 경우
+        camera.position.lerpVectors(firstCameraPosition, cameraPosition, progress);
+        requestAnimationFrame(initCameraMove);
+      } else {
+        // 애니메이션 완료
+        camera.position.copy(cameraPosition);
+      }
+    }
+    requestAnimationFrame(initCameraMove);
   }
   function createClouds(x, y){
     const CloudInstance = new CLOUD(scene, x, y);
@@ -216,7 +235,7 @@ export function createScene() {
       const theta = THREE.MathUtils.degToRad(effectController.azimuth);
 
       sun.setFromSphericalCoords(1, phi, theta);
-      console.log(sun);
+      console.log(sky.material);
       console.log(uniforms);
 
       uniforms["sunPosition"].value.copy(sun);
@@ -245,7 +264,12 @@ export function createScene() {
   function moveSunUp(angle){
     let sun2 = new THREE.Vector3();
     sun2.set(radius * Math.cos(angle), radius * Math.sin(angle), 0);
+    // sky.material.uniforms["exposure"]
     sky.material.uniforms["sunPosition"].value.copy(sun2);
+    console.log(sky.material.opacity);
+    if(Math.sin(angle) < 0){
+      sky.material.opacity = 0;
+    }
   }
 
   function setupLights() {
@@ -258,9 +282,9 @@ export function createScene() {
     shadowLight.castShadow = true;
     shadowLight.shadow.mapSize.width = 5000;
     shadowLight.shadow.mapSize.height = 5000;
-    shadowLight.shadow.camera.top = 50;
+    shadowLight.shadow.camera.top = 200;
     shadowLight.shadow.camera.right = 350;
-    shadowLight.shadow.camera.bottom = -200;
+    shadowLight.shadow.camera.bottom = -300;
     shadowLight.shadow.camera.left = -350;
     shadowLight.shadow.camera.near = 400;
     shadowLight.shadow.camera.far = 900;
@@ -515,12 +539,12 @@ export function createScene() {
     myCharacter._camera2D = camera2D;
     if (camera2D) {
       cameraTo2D(camera);
-      myCharacter._controls.target.set(200, 0, 200);
+      myCharacter._controls.target.set(100, 0, 100);
     } else {
       camera.position.set(
-        myCharacter._model.position.x - 2,
-        4,
-        myCharacter._model.position.z + 10
+        myCharacter._model.position.x - 10,
+        10,
+        myCharacter._model.position.z - 10
       );
       camera.lookAt(myCharacter._model.position);
     }
@@ -877,12 +901,12 @@ export function createScene() {
     }
     
     shadowLight.target.position.set(0, 0, 0);
-    shadowLight.shadow.camera.updateProjectionMatrix();
   }
 
   // 시작 함수
   function start() {
     render();
+    //setTimeout(render, 1000);
   }
 
   function stop() {}

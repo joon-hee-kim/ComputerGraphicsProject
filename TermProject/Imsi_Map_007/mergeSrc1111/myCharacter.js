@@ -34,7 +34,7 @@ export class MyCharacter {
     new GLTFLoader().load(this._meshArray[modelIndex], (gltf) => {
       const model = gltf.scene;
       this._model = model;
-      model.scale.set(50, 50, 50);
+      model.scale.set(20, 20, 20);
       model.position.set(3, 0, 10);
 
       model.traverse((child) => {
@@ -57,10 +57,8 @@ export class MyCharacter {
       this._currentAnimationAction = this._animationMap["Armature|Dance"];
       this._currentAnimationAction.play();
       this._AnimRequestFrame = requestAnimationFrame(this.render.bind(this));
-      
+
       this._scene.add(model);
-      // this._modelShadow = new ShadowMesh(this._model);
-      // scene.add(this._modelShadow);
     });
   }
 
@@ -97,7 +95,7 @@ export class MyCharacter {
         this._speed = 20;
       } else {
         this._currentAnimationAction = this._animationMap["Armature|Walk"]; // Walk
-        this._speed = 8;
+        this._speed = 9;
       }
     } else {
       this._currentAnimationAction = this._animationMap["Armature|Idle"]; // Idle
