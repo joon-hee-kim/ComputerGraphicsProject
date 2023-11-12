@@ -70,6 +70,7 @@ var shadowLight;
 let angle = 0;
 let radius = 700;
 let sky;
+let uniforms;
 const effectController = {
   turbidity: 10,
   rayleigh: 3,
@@ -107,7 +108,7 @@ export function createScene() {
     const cityCount = 3; // 원하는 도시 개수로 조절
     const citySize = 100; // 원하는 도시 크기로 조절
 
-    for(let i = 0; i< cityCount * cityCount; i++){
+    for (let i = 0; i < cityCount * cityCount; i++) {
       connectionTable.push(new Array(cityCount * cityCount).fill([]));
     }
 
@@ -120,11 +121,23 @@ export function createScene() {
       for (let j = 0; j < cityCount; j++) {
         const offsetX = i * citySize * 1 * 1.03; // 각 도시의 X 오프셋 조절
         const offsetY = j * citySize * 1 * 1.03; // 각 도시의 Y 오프셋 조절
-        createStation(scene, offsetX + 30, offsetY - 30, StationList, stationIndex);
+        createStation(
+          scene,
+          offsetX + 30,
+          offsetY - 30,
+          StationList,
+          stationIndex
+        );
         stationIndex++;
 
         for (let k = 0; k < 3; k++) {
-          createBuilding(scene, offsetX + Xlist[k], offsetY + Ylist[k], buildingList, k);
+          createBuilding(
+            scene,
+            offsetX + Xlist[k],
+            offsetY + Ylist[k],
+            buildingList,
+            k
+          );
         }
         // 가로등 생성
         createStreetLights(offsetX + 42, offsetY - 26, 0); // station옆
@@ -134,12 +147,12 @@ export function createScene() {
         createStreetLights(offsetX - 28, offsetY - 47, 2); // 젤 높은 건물 옆
 
         // station 뒤 나무 생성
-        for(let k = 0; k < 5; k++){
-          createTrees(offsetX + 20 + 5 * k , offsetY - 40, 0);
+        for (let k = 0; k < 5; k++) {
+          createTrees(offsetX + 20 + 5 * k, offsetY - 40, 0);
         }
 
         // 빌딩 뒤 나무 생성
-        for(let k = 0; k < 3; k++){
+        for (let k = 0; k < 3; k++) {
           createTrees(offsetX - 40, offsetY - 45 + 5 * k, 0);
         }
         createTrees(offsetX - 47, offsetY + 7, 1);
@@ -156,24 +169,21 @@ export function createScene() {
         createBenches(offsetX - 47, offsetY, 2);
         createFlowers(offsetX - 45, offsetY);
 
-
         let cityObject = createCityObject(citySize);
 
         cityInfo.push({
           name: `City ${i + 1}`,
           population: Math.floor(Math.random() * 1000000),
-          x : offsetX,
-          y : 0,
-          z : offsetY,
-          index : i,
-          isTrainArrive : false,
+          x: offsetX,
+          y: 0,
+          z: offsetY,
+          index: i,
+          isTrainArrive: false,
         });
 
         cityObject.mesh.position.set(offsetX, 0, offsetY);
 
         scene.add(cityObject.mesh);
-
-
       }
     }
     myCharacter = new MyCharacter(scene, renderer, camera);
@@ -188,21 +198,21 @@ export function createScene() {
 
     const raycaster = new THREE.Raycaster();
 
-    const constructed_index = [0,1,2];
-    for(let i = 0; i<constructed_index.length; i++){
+    const constructed_index = [0, 1, 2];
+    for (let i = 0; i < constructed_index.length; i++) {
       rail_constructed.push(StationList[constructed_index[i]]);
       // console.log(rail_constructed);
-      if(rail_constructed.length >= 2){
+      if (rail_constructed.length >= 2) {
         // console.log("Asdfasdf");
-        connectObjects_Line(rail_constructed[i-1], rail_constructed[i]);
+        connectObjects_Line(rail_constructed[i - 1], rail_constructed[i]);
       }
     }
-    for(let i = 0; i<rail_constructed.length; i++){
+    for (let i = 0; i < rail_constructed.length; i++) {
       rail_info[3] = rail_info[3].concat(rail_constructed[i].index);
     }
     console.log(rail_info);
     let isCircleLine = false;
-    if(rail_constructed[0] == rail_constructed[rail_constructed.length - 1]){
+    if (rail_constructed[0] == rail_constructed[rail_constructed.length - 1]) {
       isCircleLine = true;
       constructed.pop();
       console.log(" rail_constructed: ", rail_constructed);
@@ -212,23 +222,35 @@ export function createScene() {
     // }
     console.log(rail_info);
     // //서클라인 변경 필요함.
-    const myTrain_constructed = new Train(scene, rail_constructed, 2.0, isCircleLine, 3);
+    const myTrain_constructed = new Train(
+      scene,
+      rail_constructed,
+      2.0,
+      isCircleLine,
+      3
+    );
     myTrain_constructed.start();
     console.log(StationList);
-    // 여기에 다른 초기화 로직 추가 (도시 객체를 이용하여 씬 초기 상태 설정)
+    console.log(Train.get_pessenger());
 
+    setInterval(handleNPCPlacement, 3000);
+    // 여기에 다른 초기화 로직 추가 (도시 객체를 이용하여 씬 초기 상태 설정)
   }
-  function initCameraAnimation(){
+  function initCameraAnimation() {
     var startTimestamp = null;
 
     function initCameraMove(timestamp) {
       if (!startTimestamp) startTimestamp = timestamp;
 
-      var progress = (timestamp - startTimestamp) / 5000;
+      var progress = (timestamp - startTimestamp) / 2000;
 
       if (progress < 1) {
         // 이동 중인 경우
-        camera.position.lerpVectors(firstCameraPosition, cameraPosition, progress);
+        camera.position.lerpVectors(
+          firstCameraPosition,
+          cameraPosition,
+          progress
+        );
         requestAnimationFrame(initCameraMove);
       } else {
         // 애니메이션 완료
@@ -237,25 +259,25 @@ export function createScene() {
     }
     requestAnimationFrame(initCameraMove);
   }
-  function createClouds(x, y){
+  function createClouds(x, y) {
     const CloudInstance = new CLOUD(scene, x, y);
   }
 
-  function createTrees(x, y, k){
+  function createTrees(x, y, k) {
     const TreeInstance = new TREE(scene, x, y, k);
     treeList.push(TreeInstance);
   }
 
-  function createStreetLights(x, y, k){
+  function createStreetLights(x, y, k) {
     const StreetLightInstance = new STREETLIGHT(scene, x, y, k);
     streetLight.push(StreetLightInstance);
   }
 
-  function createFlowers(x, y){
+  function createFlowers(x, y) {
     const FlowerInstance = new FLOWER(scene, x, y);
   }
 
-  function createBenches(x, y, k){
+  function createBenches(x, y, k) {
     const BenchInstance = new BENCH(scene, x, y, k);
   }
   function initSky() {
@@ -265,10 +287,10 @@ export function createScene() {
     scene.add(sky);
 
     let sun = new THREE.Vector3();
+    uniforms = sky.material.uniforms;
 
     /// GUI
     function guiChanged() {
-      const uniforms = sky.material.uniforms;
       uniforms["turbidity"].value = effectController.turbidity;
       uniforms["rayleigh"].value = effectController.rayleigh;
       uniforms["mieCoefficient"].value = effectController.mieCoefficient;
@@ -278,36 +300,22 @@ export function createScene() {
       const theta = THREE.MathUtils.degToRad(effectController.azimuth);
 
       sun.setFromSphericalCoords(1, phi, theta);
-      console.log(sky.material);
-      console.log(uniforms);
 
       uniforms["sunPosition"].value.copy(sun);
 
       renderer.toneMappingExposure = effectController.exposure;
-      renderer.render(scene, camera);
     }
-
-    const gui = new GUI();
-
-    gui.add(effectController, "turbidity", 0.0, 20.0, 0.1).onChange(guiChanged);
-    gui.add(effectController, "rayleigh", 0.0, 4, 0.001).onChange(guiChanged);
-    gui
-      .add(effectController, "mieCoefficient", 0.0, 0.1, 0.001)
-      .onChange(guiChanged);
-    gui
-      .add(effectController, "mieDirectionalG", 0.0, 1, 0.001)
-      .onChange(guiChanged);
-    gui.add(effectController, "elevation", 0, 90, 0.1).onChange(guiChanged);
-    gui.add(effectController, "azimuth", -180, 180, 0.1).onChange(guiChanged);
-    gui.add(effectController, "exposure", 0, 1, 0.0001).onChange(guiChanged);
-
     guiChanged();
   }
 
-  function moveSunUp(angle){
-    let sun2 = new THREE.Vector3();
-    sun2.set(radius * Math.cos(angle), radius * Math.sin(angle), 0);
-    sky.material.uniforms["sunPosition"].value.copy(sun2);
+  function moveSunUp(angle) {
+    let sun2 = new THREE.Vector3(
+      radius * Math.cos(angle),
+      radius * Math.sin(angle),
+      0
+    );
+
+    uniforms["sunPosition"].value.copy(sun2);
   }
 
   function setupLights() {
@@ -327,7 +335,7 @@ export function createScene() {
     shadowLight.shadow.camera.near = 400;
     shadowLight.shadow.camera.far = 900;
     shadowLight.shadow.radius = 5;
-    
+
     const shadowCameraHelper = new THREE.CameraHelper(
       shadowLight.shadow.camera
     );
@@ -336,11 +344,10 @@ export function createScene() {
     scene.add(ambientLight, shadowLight, shadowLight.target);
   }
 
-  
   // 렌더링 루프 함수
   function render() {
     requestAnimationFrame(render);
-    if(myCharacter._start){
+    if (myCharacter._start) {
       animate();
     }
 
@@ -357,11 +364,16 @@ export function createScene() {
     let selectedControl_start = document.getElementById("button-start");
     let selectedControl_stop = document.getElementById("button-stop");
 
-    let selectedControl_Connect_Line1 = document.getElementById("button-connect_Line1");
-    let selectedControl_Connect_Line2 = document.getElementById("button-connect_Line2");
-    let selectedControl_Connect_Line3 = document.getElementById("button-connect_Line3");
-    
-    
+    let selectedControl_Connect_Line1 = document.getElementById(
+      "button-connect_Line1"
+    );
+    let selectedControl_Connect_Line2 = document.getElementById(
+      "button-connect_Line2"
+    );
+    let selectedControl_Connect_Line3 = document.getElementById(
+      "button-connect_Line3"
+    );
+
     if (activeToolId === toolId) {
       // 이미 선택된 도구를 다시 클릭하면 선택 취소
       console.log("Tool selection canceled.");
@@ -424,23 +436,24 @@ export function createScene() {
         // }
         // console.log(connectionTable);
 
-        for(let i = 0; i<rail_Line1.length; i++){
+        for (let i = 0; i < rail_Line1.length; i++) {
           rail_info[0] = rail_info[0].concat(rail_Line1[i].index);
         }
         console.log(rail_info);
         let isCircleLine1 = false;
-        if(rail_Line1[0] == rail_Line1[rail_Line1.length - 1]){
+        if (rail_Line1[0] == rail_Line1[rail_Line1.length - 1]) {
           isCircleLine1 = true;
           rail_Line1.pop();
           console.log(" rail_Lin1: ", rail_Line1);
         }
-        for(let i = 0; i<npcList.length; i++){
+        for (let i = 0; i < npcList.length; i++) {
           npcList[i].updateRailInfo(rail_info);
         }
         console.log(rail_info);
         //서클라인 변경 필요함.
         const myTrain1 = new Train(scene, rail_Line1, 2.0, isCircleLine1, 0);
         myTrain1.start();
+        console.log("시작되니");
       }
 
       if (activeToolId == "connect_Line2") {
@@ -458,17 +471,17 @@ export function createScene() {
         //   console.log(x, y);
         // }
 
-        for(let i = 0; i<rail_Line2.length; i++){
+        for (let i = 0; i < rail_Line2.length; i++) {
           rail_info[1] = rail_info[1].concat(rail_Line2[i].index);
         }
         console.log(rail_info);
-        
+
         let isCircleLine2 = false;
-        if(rail_Line2[0] == rail_Line2[rail_Line2.length - 1]){
+        if (rail_Line2[0] == rail_Line2[rail_Line2.length - 1]) {
           isCircleLine2 = true;
           rail_Line2.pop();
         }
-        for(let i = 0; i<npcList.length; i++){
+        for (let i = 0; i < npcList.length; i++) {
           npcList[i].updateRailInfo(rail_info);
         }
         // console.log(connectionTable);
@@ -492,17 +505,17 @@ export function createScene() {
         // }
         // console.log(connectionTable);
 
-        for(let i = 0; i<rail_Line3.length; i++){
+        for (let i = 0; i < rail_Line3.length; i++) {
           rail_info[2] = rail_info[2].concat(rail_Line3[i].index);
         }
         console.log(rail_info);
 
         let isCircleLine3 = false;
-        if(rail_Line3[0] == rail_Line3[rail_Line3.length - 1]){
+        if (rail_Line3[0] == rail_Line3[rail_Line3.length - 1]) {
           isCircleLine3 = true;
           rail_Line3.pop();
         }
-        for(let i = 0; i<npcList.length; i++){
+        for (let i = 0; i < npcList.length; i++) {
           npcList[i].updateRailInfo(rail_info);
         }
         const myTrain3 = new Train(scene, rail_Line3, 2.0, isCircleLine3, 2);
@@ -575,7 +588,11 @@ export function createScene() {
         document.addEventListener("mousemove", handleConnectHover_Line1, false);
       } else {
         flag_to_hover1 = 0;
-        document.removeEventListener("mousemove", handleConnectHover_Line1, false);
+        document.removeEventListener(
+          "mousemove",
+          handleConnectHover_Line1,
+          false
+        );
       }
 
       if (activeToolId == "connect_Line2") {
@@ -583,7 +600,11 @@ export function createScene() {
         document.addEventListener("mousemove", handleConnectHover_Line2, false);
       } else {
         flag_to_hover2 = 0;
-        document.removeEventListener("mousemove", handleConnectHover_Line2, false);
+        document.removeEventListener(
+          "mousemove",
+          handleConnectHover_Line2,
+          false
+        );
       }
 
       if (activeToolId == "connect_Line3") {
@@ -591,7 +612,11 @@ export function createScene() {
         document.addEventListener("mousemove", handleConnectHover_Line3, false);
       } else {
         flag_to_hover3 = 0;
-        document.removeEventListener("mousemove", handleConnectHover_Line3, false);
+        document.removeEventListener(
+          "mousemove",
+          handleConnectHover_Line3,
+          false
+        );
       }
 
       if (activeToolId == "start") {
@@ -641,7 +666,7 @@ export function createScene() {
   function animateCamera() {
     var startTimestamp = null;
 
-    function animate(timestamp) {
+    function cameraMove(timestamp) {
       if (!startTimestamp) startTimestamp = timestamp;
 
       var progress = (timestamp - startTimestamp) / animationDuration;
@@ -649,7 +674,7 @@ export function createScene() {
       if (progress < 1) {
         // 이동 중인 경우
         camera.position.lerpVectors(cameraPosition, targetPosition, progress);
-        requestAnimationFrame(animate);
+        requestAnimationFrame(cameraMove);
       } else {
         // 애니메이션 완료
         camera.position.copy(targetPosition);
@@ -657,7 +682,7 @@ export function createScene() {
       // 렌더링 및 다른 업데이트 로직
       // render();
     }
-    requestAnimationFrame(animate);
+    requestAnimationFrame(cameraMove);
   }
 
   pauseBGMButton.onclick = function () {
@@ -694,7 +719,7 @@ export function createScene() {
     const raycaster = new THREE.Raycaster();
     raycaster.setFromCamera(mouse, camera);
 
-    // 레이캐스팅 결과
+    //레이캐스팅 결과
     const intersects = raycaster.intersectObjects(scene.children);
 
     //console.log( "intersects1: ", intersects);
@@ -710,7 +735,7 @@ export function createScene() {
       const intersection = intersects[0];
       const object = intersection.object;
 
-      // 빛나게 하는 코드 추가
+      //빛나게 하는 코드 추가
       if (object.userData.name === undefined) {
         object.material.emissive.set(0x808080); // 빛나게 하는 색상
       }
@@ -818,16 +843,16 @@ export function createScene() {
         let minDistance = Infinity;
         let nearStationIndex;
         console.log(" StationList: ", StationList);
-        for(var i = 0; i<StationList.length; i++){          
+        for (var i = 0; i < StationList.length; i++) {
           const stationposition = new THREE.Vector3(
             StationList[i].x,
             // StationList[i].mesh.position.y,
             0,
             StationList[i].y
           );
-          
+
           const distance = objectposition.distanceTo(stationposition);
-          if(minDistance > distance){
+          if (minDistance > distance) {
             nearStationIndex = i;
             minDistance = distance;
           }
@@ -880,7 +905,7 @@ export function createScene() {
         );
         let minDistance = Infinity;
         let nearStationIndex;
-        for(var i = 0; i<StationList.length; i++){          
+        for (var i = 0; i < StationList.length; i++) {
           const stationposition = new THREE.Vector3(
             StationList[i].x,
             // StationList[i].mesh.position.y,
@@ -888,7 +913,7 @@ export function createScene() {
             StationList[i].y
           );
           const distance = objectposition.distanceTo(stationposition);
-          if(minDistance > distance){
+          if (minDistance > distance) {
             nearStationIndex = i;
             minDistance = distance;
           }
@@ -943,7 +968,7 @@ export function createScene() {
         );
         let minDistance = Infinity;
         let nearStationIndex;
-        for(var i = 0; i<StationList.length; i++){          
+        for (var i = 0; i < StationList.length; i++) {
           const stationposition = new THREE.Vector3(
             StationList[i].x,
             // StationList[i].mesh.position.y,
@@ -951,7 +976,7 @@ export function createScene() {
             StationList[i].y
           );
           const distance = objectposition.distanceTo(stationposition);
-          if(minDistance > distance){
+          if (minDistance > distance) {
             nearStationIndex = i;
             minDistance = distance;
           }
@@ -982,44 +1007,43 @@ export function createScene() {
     console.log("activate connectObjects");
     // 중복 체크
     // if (!isAlreadyConnected(object1, object2)) {
-      // 중복이 아니면 연결된 객체 배열에 추가
-      
-      // 필요 x connectedObjects_Line1.push({ object1, object2 });
+    // 중복이 아니면 연결된 객체 배열에 추가
 
-      //   if (!adjacencyList_Line1[object1.mesh.id]) {
-      //     adjacencyList_Line1[object1.mesh.id] = [];
-      // }
-      // if (!adjacencyList_Line1[object2.mesh.id]) {
-      //     adjacencyList_Line1[object2.mesh.id] = [];
-      // }
+    // 필요 x connectedObjects_Line1.push({ object1, object2 });
 
-      const geometry = new THREE.BufferGeometry();
-      const vertices = new Float32Array([
-        object1.x,
-        0,
-        object1.y,
-        
-        object2.x,
-        0,
-        object2.y,
-      ]);
+    //   if (!adjacencyList_Line1[object1.mesh.id]) {
+    //     adjacencyList_Line1[object1.mesh.id] = [];
+    // }
+    // if (!adjacencyList_Line1[object2.mesh.id]) {
+    //     adjacencyList_Line1[object2.mesh.id] = [];
+    // }
 
-      // adjacencyList_Line1[object1.mesh.id].push(object2.mesh.id);
-      // adjacencyList_Line1[object2.mesh.id].push(object1.mesh.id);
+    const geometry = new THREE.BufferGeometry();
+    const vertices = new Float32Array([
+      object1.x,
+      0,
+      object1.y,
 
-      geometry.setAttribute("position", new THREE.BufferAttribute(vertices, 3));
+      object2.x,
+      0,
+      object2.y,
+    ]);
 
-      const material = new THREE.LineBasicMaterial({ color: 0xff0000 });
-      const line = new THREE.Line(geometry, material);
+    // adjacencyList_Line1[object1.mesh.id].push(object2.mesh.id);
+    // adjacencyList_Line1[object2.mesh.id].push(object1.mesh.id);
 
-      scene.add(line);
+    geometry.setAttribute("position", new THREE.BufferAttribute(vertices, 3));
 
-      // console.log( "adjacencyList: ", adjacencyList_Line1 );
+    const material = new THREE.LineBasicMaterial({ color: 0xff0000 });
+    const line = new THREE.Line(geometry, material);
+
+    scene.add(line);
+
+    // console.log( "adjacencyList: ", adjacencyList_Line1 );
     // } else {
     //   console.log("Already connected!");
     // }
   }
-
 
   function connectObjects_Line1(object1, object2) {
     //console.log(" connectObjects_Line Obj1: ", object1);
@@ -1029,39 +1053,39 @@ export function createScene() {
     console.log("activate connectObjects");
     // 중복 체크
     // if (!isAlreadyConnected(object1, object2)) {
-      // 중복이 아니면 연결된 객체 배열에 추가
-      
-      // 필요 x connectedObjects_Line1.push({ object1, object2 });
+    // 중복이 아니면 연결된 객체 배열에 추가
 
-        if (!adjacencyList_Line1[object1.mesh.id]) {
-          adjacencyList_Line1[object1.mesh.id] = [];
-      }
-      if (!adjacencyList_Line1[object2.mesh.id]) {
-          adjacencyList_Line1[object2.mesh.id] = [];
-      }
+    // 필요 x connectedObjects_Line1.push({ object1, object2 });
 
-      const geometry = new THREE.BufferGeometry();
-      const vertices = new Float32Array([
-        object1.x,
-        0,
-        object1.y,
-        
-        object2.x,
-        0,
-        object2.y,
-      ]);
+    if (!adjacencyList_Line1[object1.mesh.id]) {
+      adjacencyList_Line1[object1.mesh.id] = [];
+    }
+    if (!adjacencyList_Line1[object2.mesh.id]) {
+      adjacencyList_Line1[object2.mesh.id] = [];
+    }
 
-      adjacencyList_Line1[object1.mesh.id].push(object2.mesh.id);
-      adjacencyList_Line1[object2.mesh.id].push(object1.mesh.id);
+    const geometry = new THREE.BufferGeometry();
+    const vertices = new Float32Array([
+      object1.x,
+      0,
+      object1.y,
 
-      geometry.setAttribute("position", new THREE.BufferAttribute(vertices, 3));
+      object2.x,
+      0,
+      object2.y,
+    ]);
 
-      const material = new THREE.LineBasicMaterial({ color: 0xff0000 });
-      const line = new THREE.Line(geometry, material);
+    adjacencyList_Line1[object1.mesh.id].push(object2.mesh.id);
+    adjacencyList_Line1[object2.mesh.id].push(object1.mesh.id);
 
-      scene.add(line);
+    geometry.setAttribute("position", new THREE.BufferAttribute(vertices, 3));
 
-      console.log( "adjacencyList: ", adjacencyList_Line1 );
+    const material = new THREE.LineBasicMaterial({ color: 0xff0000 });
+    const line = new THREE.Line(geometry, material);
+
+    scene.add(line);
+
+    console.log("adjacencyList: ", adjacencyList_Line1);
     // } else {
     //   console.log("Already connected!");
     // }
@@ -1074,38 +1098,38 @@ export function createScene() {
     console.log(" Object1: ", object2);
     // 중복 체크
     // if (!isAlreadyConnected(object1, object2)) {
-      // 중복이 아니면 연결된 객체 배열에 추가
-      connectedObjects_Line2.push({ object1, object2 });
+    // 중복이 아니면 연결된 객체 배열에 추가
+    connectedObjects_Line2.push({ object1, object2 });
 
-        if (!adjacencyList_Line2[object1.mesh.id]) {
-          adjacencyList_Line2[object1.mesh.id] = [];
-      }
-      if (!adjacencyList_Line2[object2.mesh.id]) {
-          adjacencyList_Line2[object2.mesh.id] = [];
-      }
+    if (!adjacencyList_Line2[object1.mesh.id]) {
+      adjacencyList_Line2[object1.mesh.id] = [];
+    }
+    if (!adjacencyList_Line2[object2.mesh.id]) {
+      adjacencyList_Line2[object2.mesh.id] = [];
+    }
 
-      const geometry = new THREE.BufferGeometry();
-      const vertices = new Float32Array([
-        object1.x,
-        0,
-        object1.y,
-        
-        object2.x,
-        0,
-        object2.y,
-      ]);
+    const geometry = new THREE.BufferGeometry();
+    const vertices = new Float32Array([
+      object1.x,
+      0,
+      object1.y,
 
-      adjacencyList_Line2[object1.mesh.id].push(object2.mesh.id);
-      adjacencyList_Line2[object2.mesh.id].push(object1.mesh.id);
+      object2.x,
+      0,
+      object2.y,
+    ]);
 
-      geometry.setAttribute("position", new THREE.BufferAttribute(vertices, 3));
+    adjacencyList_Line2[object1.mesh.id].push(object2.mesh.id);
+    adjacencyList_Line2[object2.mesh.id].push(object1.mesh.id);
 
-      const material = new THREE.LineBasicMaterial({ color: 0x00ff00 });
-      const line = new THREE.Line(geometry, material);
+    geometry.setAttribute("position", new THREE.BufferAttribute(vertices, 3));
 
-      scene.add(line);
+    const material = new THREE.LineBasicMaterial({ color: 0x00ff00 });
+    const line = new THREE.Line(geometry, material);
 
-      console.log( "adjacencyList: ", adjacencyList_Line2 );
+    scene.add(line);
+
+    console.log("adjacencyList: ", adjacencyList_Line2);
     // } else {
     //   console.log("Already connected!");
     // }
@@ -1117,38 +1141,38 @@ export function createScene() {
     console.log("Object1,2 : ", object1, object2);
     // 중복 체크
     // if (!isAlreadyConnected(object1, object2)) {
-      // 중복이 아니면 연결된 객체 배열에 추가
-      connectedObjects_Line3.push({ object1, object2 });
+    // 중복이 아니면 연결된 객체 배열에 추가
+    connectedObjects_Line3.push({ object1, object2 });
 
-        if (!adjacencyList_Line3[object1.mesh.id]) {
-          adjacencyList_Line3[object1.mesh.id] = [];
-      }
-      if (!adjacencyList_Line3[object2.mesh.id]) {
-          adjacencyList_Line3[object2.mesh.id] = [];
-      }
+    if (!adjacencyList_Line3[object1.mesh.id]) {
+      adjacencyList_Line3[object1.mesh.id] = [];
+    }
+    if (!adjacencyList_Line3[object2.mesh.id]) {
+      adjacencyList_Line3[object2.mesh.id] = [];
+    }
 
-      const geometry = new THREE.BufferGeometry();
-      const vertices = new Float32Array([
-        object1.x,
-        0,
-        object1.y,
-        
-        object2.x,
-        0,
-        object2.y,
-      ]);
+    const geometry = new THREE.BufferGeometry();
+    const vertices = new Float32Array([
+      object1.x,
+      0,
+      object1.y,
 
-      adjacencyList_Line3[object1.mesh.id].push(object2.mesh.id);
-      adjacencyList_Line3[object2.mesh.id].push(object1.mesh.id);
+      object2.x,
+      0,
+      object2.y,
+    ]);
 
-      geometry.setAttribute("position", new THREE.BufferAttribute(vertices, 3));
+    adjacencyList_Line3[object1.mesh.id].push(object2.mesh.id);
+    adjacencyList_Line3[object2.mesh.id].push(object1.mesh.id);
 
-      const material = new THREE.LineBasicMaterial({ color: 0x0000ff });
-      const line = new THREE.Line(geometry, material);
+    geometry.setAttribute("position", new THREE.BufferAttribute(vertices, 3));
 
-      scene.add(line);
+    const material = new THREE.LineBasicMaterial({ color: 0x0000ff });
+    const line = new THREE.Line(geometry, material);
 
-      console.log( "adjacencyList: ", adjacencyList_Line3 );
+    scene.add(line);
+
+    console.log("adjacencyList: ", adjacencyList_Line3);
     // } else {
     //   console.log("Already connected!");
     // }
@@ -1205,8 +1229,15 @@ export function createScene() {
     //   createNPC(scene, x, y);
     // }
     // 화면 좌표를 월드 좌표로 변환
-    const myNPC = new NewNPC(scene, camera, renderer, buildingList, StationList, npcList);
-    NewNPC.NPC_count ++; // NewNPC 내에서 정의된 static variable NPC_count. 총 생성된 npc 숫자를 나타냅니다
+    const myNPC = new NewNPC(
+      scene,
+      camera,
+      renderer,
+      buildingList,
+      StationList,
+      npcList
+    );
+    NewNPC.NPC_count++; // NewNPC 내에서 정의된 static variable NPC_count. 총 생성된 npc 숫자를 나타냅니다
     myNPC.updateRailInfo(rail_info);
   }
   function handleRemovePlacement(event) {
@@ -1348,8 +1379,6 @@ export function createScene() {
 
       // 여기에 road 생성 코드 추가 (createRoad 함수 호출 등)
       createStation(scene, x, y, StationList);
-
-      animate();
     }
   }
 
@@ -1384,15 +1413,15 @@ export function createScene() {
   }
 
   function animate(time) {
-    angle += 0.001;
+    angle += 0.005;
 
     // directionalLight의 위치 업데이트
     shadowLight.position.x = radius * Math.cos(angle);
     shadowLight.position.y = radius * Math.sin(angle);
-    if(sky !== undefined){
+    if (sky !== undefined) {
       moveSunUp(angle);
     }
-    
+
     shadowLight.target.position.set(0, 0, 0);
   }
 
