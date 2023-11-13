@@ -18,7 +18,11 @@ import { TREE } from "./Tree.js";
 import { STREETLIGHT } from "./StreetLight.js";
 import { FLOWER } from "./Flower.js";
 import { BENCH } from "./Bench.js";
-import { CLOUD } from "./Cloud.js";
+import { RAIL } from "./rail.js";
+import { ROTATE_RAIL } from "./rotateRail.js";
+import { ROAD_PACK } from "./road_pack.js";
+import { MUSEUM_MODEL } from "./museumbuilding.js";
+import { CITY_BUILDING } from "./citybuilding.js";
 
 /**
  * 3D 시뮬레이션의 주요 씬을 생성합니다.
@@ -28,6 +32,11 @@ const cityInfo = [];
 const buildingList = [];
 const HouseList = [];
 const StationList = [];
+const angleRailList = [];
+const cityBuildingList = [];
+const railList = [];
+const museumList = [];
+const LoadList = [];
 
 const npcList = [];
 const treeList = [];
@@ -113,9 +122,8 @@ export function createScene() {
       connectionTable.push(new Array(cityCount * cityCount).fill([]));
     }
 
-    // 빌딩 생성 offset
-    const Xlist = [-30, -40, -40];
-    const Ylist = [-40, -10, 40];
+    const Xlist = [-21, -40];
+    const Ylist = [-25, 40];
 
     var stationIndex = 0;
     for (let i = 0; i < cityCount; i++) {
@@ -140,37 +148,47 @@ export function createScene() {
             k
           );
         }
-        if (j == 0 && i == 0) {
-          createStreetLights(offsetX + 42, offsetY - 26, 0); // station옆
-          createStreetLights(offsetX + 15, offsetY - 26, 0); // station 옆
-          createStreetLights(offsetX - 30, offsetY + 35, 1); // 주황 건물 옆
-          createStreetLights(offsetX - 33, offsetY - 8, 0); // 젤 작은 건물 옆
-          createStreetLights(offsetX - 28, offsetY - 47, 2); // 젤 높은 건물 옆
-        }
-        // 가로등 생성
+        createStreetLights(offsetX - 28, offsetY + 5, 0); // modern 빌딩 옆
+        // createStreetLights(offsetX + 2, offsetY + 5, 0); // city 빌딩과 주황 건물 사이
 
         // station 뒤 나무 생성
-        for (let k = 0; k < 5; k++) {
-          createTrees(offsetX + 20 + 5 * k, offsetY - 40, 0);
-        }
+        createTrees(offsetX - 47, offsetY + 7, 0);
 
-        // 빌딩 뒤 나무 생성
+        // 가로 열차 레일
+        createRails(offsetX + 37, offsetY - 18);
+        createRails(offsetX + 37, offsetY + 10);
+        createRails(offsetX + 37, offsetY + 37);
+
+        // 세로 열차 레일
+        createRotateRails(offsetX + 20, offsetY - 40);
+        createRotateRails(offsetX + 10, offsetY - 40);
+        createRotateRails(offsetX + 0, offsetY - 40);
+        createRotateRails(offsetX - 10, offsetY - 40);
+        createRotateRails(offsetX - 30, offsetY - 40);
+
+        // city 빌딩 및 museum 빌딩
+        createCityBuilding(offsetX - 40, offsetY - 26);
+        createMuseum(offsetX + 7, offsetY + 40);
+
+        // 로드 생성
         for (let k = 0; k < 3; k++) {
-          createTrees(offsetX - 40, offsetY - 45 + 5 * k, 0);
+          createRoadPack(offsetX + 12 - +23 * k, offsetY + 20);
         }
-        createTrees(offsetX - 47, offsetY + 7, 1);
 
         // 꽃과 벤치 생성
-        createBenches(offsetX, offsetY + 45, 0);
-        createFlowers(offsetX - 7, offsetY + 45);
-        createFlowers(offsetX + 7, offsetY + 45);
+        // 꽃과 벤치 생성
+        createBenches(offsetX - 20, offsetY + 45, 0);
+        createFlowers(offsetX - 27, offsetY + 45);
+        createFlowers(offsetX - 13, offsetY + 45);
 
-        createBenches(offsetX, offsetY - 45, 1);
-        createFlowers(offsetX - 7, offsetY - 45);
-        createFlowers(offsetX + 7, offsetY - 45);
-
-        createBenches(offsetX - 47, offsetY, 2);
-        createFlowers(offsetX - 45, offsetY);
+        createBenches(offsetX, offsetY - 30, 1);
+        createFlowers(offsetX - 7, offsetY - 30);
+        createFlowers(offsetX + 7, offsetY - 30);
+        createBenches(offsetX - 5, offsetY + 2, 1);
+        createFlowers(offsetX - 12, offsetY + 2);
+        createFlowers(offsetX + 5, offsetY + 2);
+        createBenches(offsetX - 37, offsetY + 2, 1);
+        createFlowers(offsetX - 45, offsetY + 2);
 
         let cityObject = createCityObject(citySize);
 
@@ -201,7 +219,7 @@ export function createScene() {
 
     const raycaster = new THREE.Raycaster();
 
-    const constructed_index = [0, 1, 2];
+    const constructed_index = [0, 1, 2, 5, 4, 3, 6, 7, 8];
     for (let i = 0; i < constructed_index.length; i++) {
       rail_constructed.push(StationList[constructed_index[i]]);
       // console.log(rail_constructed);
@@ -261,6 +279,31 @@ export function createScene() {
       }
     }
     requestAnimationFrame(initCameraMove);
+  }
+
+  function createRails(x, y) {
+    const RailInstance = new RAIL(scene, x, y);
+    railList.push(RailInstance);
+  }
+
+  function createRotateRails(x, y) {
+    const RailInstance = new ROTATE_RAIL(scene, x, y);
+    angleRailList.push(RailInstance);
+  }
+
+  function createCityBuilding(x, y) {
+    const CityBuildingInstance = new CITY_BUILDING(scene, x, y);
+    cityBuildingList.push(CityBuildingInstance);
+  }
+
+  function createMuseum(x, y) {
+    const MuseumInstance = new MUSEUM_MODEL(scene, x, y);
+    museumList.push(MuseumInstance);
+  }
+
+  function createRoadPack(x, y) {
+    const RoadPackInstance = new ROAD_PACK(scene, x, y);
+    LoadList.push(RoadPackInstance);
   }
   function createClouds(x, y) {
     const CloudInstance = new CLOUD(scene, x, y);
@@ -325,13 +368,17 @@ export function createScene() {
       // 해가 지면
       if (sunset == 0) {
         sunset = 1;
-        streetLight[1]._setupLights();
+        for (let i = 0; i < streetLight.length; i++) {
+          streetLight[i]._setupLights();
+        }
       }
     } else {
       //해가 뜨면
       if (sunset == 1) {
         sunset = 0;
-        streetLight[1]._turnOffLights();
+        for (let i = 0; i < streetLight.length; i++) {
+          streetLight[i]._turnOffLights();
+        }
       }
     }
     uniforms["sunPosition"].value.copy(sun2);
@@ -354,11 +401,6 @@ export function createScene() {
     shadowLight.shadow.camera.near = 400;
     shadowLight.shadow.camera.far = 900;
     shadowLight.shadow.radius = 5;
-
-    const shadowCameraHelper = new THREE.CameraHelper(
-      shadowLight.shadow.camera
-    );
-    scene.add(shadowCameraHelper);
 
     scene.add(ambientLight, shadowLight, shadowLight.target);
   }
