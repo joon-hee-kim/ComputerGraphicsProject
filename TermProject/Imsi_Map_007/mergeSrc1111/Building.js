@@ -5,19 +5,26 @@ import { GLTFLoader } from "../../examples/jsm/loaders/GLTFLoader.js";
 // 빌딩 모델의 경로와 크기 정보
 const buildingModels = [
   {
-    path: "./LowpolyModel/city_building/scene.gltf",// 제일 높은 모델
-    scale: {x: 0.003, y: 0.0025, z: 0.002},
+    path: "./LowpolyModel/city_building/scene.gltf", // 제일 높은 모델
+    scale: { x: 0.003, y: 0.0025, z: 0.002 },
   },
-  { path: "./LowpolyModel/modern_apartment/scene.gltf", //
-  scale: {x: 0.5, y: 0.7, z: 0.5} },
-  {path: "./LowpolyModel/whitehall_building/scene.gltf",  //주황 모델
-  scale: {x: 0.2, y: 0.3, z: 0.4}},
-  {path: "./LowpolyModel/storefront_lowpoly_house/scene.gltf", // 빨간 모델
-  scale: { x: 3.5, y: 5, z: 3.5}},
+  {
+    path: "./LowpolyModel/modern_apartment/scene.gltf", //
+    scale: { x: 0.5, y: 0.7, z: 0.5 },
+  },
+  {
+    path: "./LowpolyModel/whitehall_building/scene.gltf", //주황 모델
+    scale: { x: 0.2, y: 0.3, z: 0.4 },
+  },
+  {
+    path: "./LowpolyModel/storefront_lowpoly_house/scene.gltf", // 빨간 모델
+    scale: { x: 3.5, y: 5, z: 3.5 },
+  },
 ];
 
 export function createBuilding(scene, x, y, buildingList, modelIndex) {
   // 정수로 위치 조정
+  console.log(x, y);
   const roundX = Math.round(x);
   const roundY = Math.round(y);
 

@@ -4,7 +4,7 @@ import { Train } from "./train.js";
 
 export class NewNPC {
   static NPC_count = 0;
-  static get_NPC_count(){
+  static get_NPC_count() {
     return this.NPC_count;
   }
   constructor(scene, camera, renderer, buildingList, stationList, npcList) {
@@ -31,7 +31,7 @@ export class NewNPC {
     this._startBuildingToNearStationRadian;
 
     this._endStationIndex;
-    this._endStationPosition;    
+    this._endStationPosition;
     //
     this._arriveAtStartStation = false;
     this._rideOnTrain = false;
@@ -41,7 +41,7 @@ export class NewNPC {
     this.path;
     this.route;
     this.currentIndex = 0;
-    
+
     this.canArriveAt = false;
 
     this.npcList.push(this);
@@ -49,61 +49,59 @@ export class NewNPC {
     this._AnimRequestFrame = requestAnimationFrame(this.render.bind(this));
     this._decideModelAndDecideRoot();
   }
-  
-  
-  updateRailInfo(rail_info){
+
+  updateRailInfo(rail_info) {
     const route = rail_info;
     const start = this._nearStationIndex;
     const target = this._endStationIndex;
     let startInRoute = false;
 
     let table = new Array(this._stationList.length).fill([]);
-    for(let i = 0; i<table.length; i++){
-        table[i] = new Array(this._stationList.length).fill(0);
+    for (let i = 0; i < table.length; i++) {
+      table[i] = new Array(this._stationList.length).fill(0);
     }
 
-    for(let i = 0; i<table.length; i++){
-        for(let j = 0; j<table.length; j++){
-            if(i!=j){
-                const connectInfo = {
-                    length : Infinity,
-                    rail : [],
-                    path : []
-                }
-                table[i][j] = connectInfo;
-            }
-            else{
-                const connectInfo = {
-                    length : 0,
-                    rail : [],
-                    path : []
-                }
-                table[i][j] = connectInfo;
-            }
+    for (let i = 0; i < table.length; i++) {
+      for (let j = 0; j < table.length; j++) {
+        if (i != j) {
+          const connectInfo = {
+            length: Infinity,
+            rail: [],
+            path: [],
+          };
+          table[i][j] = connectInfo;
+        } else {
+          const connectInfo = {
+            length: 0,
+            rail: [],
+            path: [],
+          };
+          table[i][j] = connectInfo;
         }
+      }
     }
-    for(let i = 0; i<route.length; i++){
-        for(let j = 0; j<route[i].length; j++){
-            if(start == route[i][j]){
-                startInRoute = true;
-            }
+    for (let i = 0; i < route.length; i++) {
+      for (let j = 0; j < route[i].length; j++) {
+        if (start == route[i][j]) {
+          startInRoute = true;
         }
+      }
     }
-    if(!startInRoute){
+    if (!startInRoute) {
       return;
     }
-    for(let i = 0; i<route.length; i++){
-        for(let j = 0; j<route[i].length; j++){
-            for(let k = j+1; k<route[i].length; k++){
-                const connectInfo = {
-                    length : 1,
-                    rail : [i],
-                    path : []
-                }
-                table[route[i][j]][route[i][k]] = connectInfo;  
-                table[route[i][k]][route[i][j]] = connectInfo; 
-            }
+    for (let i = 0; i < route.length; i++) {
+      for (let j = 0; j < route[i].length; j++) {
+        for (let k = j + 1; k < route[i].length; k++) {
+          const connectInfo = {
+            length: 1,
+            rail: [i],
+            path: [],
+          };
+          table[route[i][j]][route[i][k]] = connectInfo;
+          table[route[i][k]][route[i][j]] = connectInfo;
         }
+      }
     }
 
     let d = table[start];
@@ -111,53 +109,55 @@ export class NewNPC {
     let v = new Array(this._stationList.length).fill(false);
 
     v[start] = true;
-    for(let i = 0; i<this._stationList.length-2; i++){
-        let current = getSmallIndex(this._stationList.length);
-        v[current] = true;
-        for(let j = 0; j<this._stationList.length; j++){
-            if(!v[j]){
-                if(d[current].length + table[current][j].length < d[j].length){
-                    d[j].length = d[current].length + table[current][j].length;
-                    d[j].rail = d[current].rail.concat(table[current][j].rail);
-                    d[j].path = d[current].path.concat(current);
-                }
-            }
+    for (let i = 0; i < this._stationList.length - 2; i++) {
+      let current = getSmallIndex(this._stationList.length);
+      v[current] = true;
+      for (let j = 0; j < this._stationList.length; j++) {
+        if (!v[j]) {
+          if (d[current].length + table[current][j].length < d[j].length) {
+            d[j].length = d[current].length + table[current][j].length;
+            d[j].rail = d[current].rail.concat(table[current][j].rail);
+            d[j].path = d[current].path.concat(current);
+          }
         }
+      }
     }
-    if(d[target].length == Infinity){
-        this.canArriveAt = false;
-    }
-    else{
-        this.canArriveAt = true;
-        d[target].path.unshift(start);
-        d[target].path.push(target);
-        console.log(d[target]);
-        this.path = d[target].path;
-        this.route = d[target].rail;
+    if (d[target].length == Infinity) {
+      this.canArriveAt = false;
+    } else {
+      this.canArriveAt = true;
+      d[target].path.unshift(start);
+      d[target].path.push(target);
+      console.log(d[target]);
+      this.path = d[target].path;
+      this.route = d[target].rail;
     }
 
-    function getSmallIndex(n){
-        let min = Infinity;
-        let index = 0;
-        for(let i = 0; i<n; i++){
-            if(d[i].length < min && !v[i]){
-                min = d[i].length;
-                index = i;
-            }
+    function getSmallIndex(n) {
+      let min = Infinity;
+      let index = 0;
+      for (let i = 0; i < n; i++) {
+        if (d[i].length < min && !v[i]) {
+          min = d[i].length;
+          index = i;
         }
-        return index;
+      }
+      return index;
     }
   }
-
 
   _decideModelAndDecideRoot() {
     // 모델 메쉬 결정하고 시작 빌딩 결정
     var minDistanceToNearStation = Infinity;
+    console.log(minDistanceToNearStation);
     this._modelIndex = Math.floor(Math.random() * this._meshArray.length);
     this._startBuildingIndex = Math.floor(
       Math.random() * this._buildingList.length
     );
     // this._startBuildingIndex = 2;
+    console.log(this._buildingList);
+    console.log(this._startBuildingIndex);
+    console.log(this._buildingList[this._startBuildingIndex].x);
     this._buildingPosition = new THREE.Vector3(
       this._buildingList[this._startBuildingIndex].x,
       0,
@@ -173,14 +173,16 @@ export class NewNPC {
         this._stationList[i].y
       );
       const distance = this._buildingPosition.distanceTo(stationPosition);
+      console.log(this._buildingPosition);
 
       if (distance < minDistanceToNearStation) {
         minDistanceToNearStation = distance;
         this._nearStationIndex = i;
+        console.log(i);
       }
     }
 
-    do{
+    do {
       this._endBuildingIndex = Math.floor(
         Math.random() * this._buildingList.length
       );
@@ -190,25 +192,30 @@ export class NewNPC {
         this._buildingList[this._endBuildingIndex].y
       );
       var minDistanceToEndStation = Infinity;
-      for(let i = 0; i<this._stationList.length; i++){
+      for (let i = 0; i < this._stationList.length; i++) {
         const stationPosition = new THREE.Vector3(
-        this._stationList[i].x,
-        0,
-        this._stationList[i].y
+          this._stationList[i].x,
+          0,
+          this._stationList[i].y
         );
         const distance = this._endBuildingPosition.distanceTo(stationPosition);
 
-        if(distance < minDistanceToEndStation){
+        if (distance < minDistanceToEndStation) {
           minDistanceToEndStation = distance;
           this._endStationIndex = i;
         }
       }
-    }while(this._endStationIndex == this._nearStationIndex);
+    } while (this._endStationIndex == this._nearStationIndex);
 
     // this.path.push(this._nearStationIndex);
     // this.path.push(this._endStationIndex);
 
-    console.log("nearStationIndex : ", this._nearStationIndex, "endStationIndex : ", this._endStationIndex);
+    console.log(
+      "nearStationIndex : ",
+      this._nearStationIndex,
+      "endStationIndex : ",
+      this._endStationIndex
+    );
 
     // 가까운 역의 위치
     this._nearStationPosition = new THREE.Vector3(
@@ -222,7 +229,7 @@ export class NewNPC {
       0,
       this._stationList[this._endStationIndex].y
     );
-      // console.log(this._endStationPosition);
+    // console.log(this._endStationPosition);
     // 빌딩과 가까운 역과의 각도
     this._startBuildingToNearStationRadian = Math.atan2(
       this._buildingPosition.x - this._nearStationPosition.x,
@@ -232,8 +239,7 @@ export class NewNPC {
     this._endStationToEndBuildingRadian = Math.atan2(
       this._endStationPosition.x - this._endBuildingPosition.x,
       this._endStationPosition.z - this._endBuildingPosition.z
-    )
-
+    );
 
     // 모델 load
     new GLTFLoader().load(this._meshArray[this._modelIndex], (gltf) => {
@@ -308,8 +314,11 @@ export class NewNPC {
       if (Math.abs(test.x) < 3.0 && Math.abs(test.z) < 5.0) {
         // this._model.visible = false;
         this._arriveAtStartStation = true;
-        this._stationList[this._nearStationIndex].wait ++;
-        console.log("im arrive!", console.log(this._stationList[this._nearStationIndex]));
+        this._stationList[this._nearStationIndex].wait++;
+        console.log(
+          "im arrive!",
+          console.log(this._stationList[this._nearStationIndex])
+        );
       } else {
         const moveX = walkDirection.x * (this._speed * deltaTime);
         const moveZ = walkDirection.z * (this._speed * deltaTime);
@@ -355,7 +364,7 @@ export class NewNPC {
         this._endBuildingPosition
       );
       // console.log(test);
-      if (Math.abs(test.x) < 3.0 && Math.abs(test.z) < 5.0) {
+      if (Math.abs(test.x) < 5.0 && Math.abs(test.z) < 5.0) {
         this._model.visible = false;
         this._arriveAtEndBuilding = true;
         // console.log("im arrive!", console.log(this._stationList[this._nearStationIndex]));
@@ -375,59 +384,67 @@ export class NewNPC {
   }
 
   render(time) {
-    if(!this._arriveAtStartStation){
+    if (!this._arriveAtStartStation) {
       this.gotostartstation(time);
     }
-    if(this.canArriveAt && this._arriveAtStartStation && this._stationList[this._nearStationIndex].isTrainArrive[this.route[this.currentIndex]] && this.currentIndex == 0){
+    if (
+      this.canArriveAt &&
+      this._arriveAtStartStation &&
+      this._stationList[this._nearStationIndex].isTrainArrive[
+        this.route[this.currentIndex]
+      ] &&
+      this.currentIndex == 0
+    ) {
       this._model.visible = false;
-      this._stationList[this._nearStationIndex].wait --;
-      this._rideOnTrain = true; 
+      this._stationList[this._nearStationIndex].wait--;
+      this._rideOnTrain = true;
       Train.increase_passenger(this.route[this.currentIndex]);
       Train.print_passenger();
-      this.currentIndex ++;     
+      this.currentIndex++;
     }
-    if(this.canArriveAt && !this._arriveAtEndStation){
-      if(this._rideOnTrain && 
-        this._stationList[this.path[this.currentIndex]].isTrainArrive[this.route[this.currentIndex - 1]] && 
-        !this._arriveAtEndStation){
-          console.log("여기서 내립니다 ", this.path[this.currentIndex]);
-          this._stationList[this.path[this.currentIndex]].wait ++;
-          const transferStation = this._stationList[this.path[this.currentIndex]];
-          this._model.position.set(
-            transferStation.x,
-            0,
-            transferStation.y
-          );
-          Train.decrease_passenger(this.route[this.currentIndex - 1]);
-          Train.print_passenger();
-          this._model.visible = true;
+    if (this.canArriveAt && !this._arriveAtEndStation) {
+      if (
+        this._rideOnTrain &&
+        this._stationList[this.path[this.currentIndex]].isTrainArrive[
+          this.route[this.currentIndex - 1]
+        ] &&
+        !this._arriveAtEndStation
+      ) {
+        console.log("여기서 내립니다 ", this.path[this.currentIndex]);
+        this._stationList[this.path[this.currentIndex]].wait++;
+        const transferStation = this._stationList[this.path[this.currentIndex]];
+        this._model.position.set(transferStation.x, 0, transferStation.y);
+        Train.decrease_passenger(this.route[this.currentIndex - 1]);
+        Train.print_passenger();
+        this._model.visible = true;
 
-          this._rideOnTrain = false;
-          
+        this._rideOnTrain = false;
 
-          if(this.currentIndex + 1 == this.path.length){
-            this._arriveAtEndStation = true;
-            this._stationList[this.path[this.currentIndex]].wait --;
-            this._previousTime = time * 0.001;
-          }
-      }
-      console.log(this._stationList[this.path[this.currentIndex]]);
-      if(!this._arriveAtEndStation && this.currentIndex < this.route.length){
-        if(!this._rideOnTrain&&
-          this._stationList[this.path[this.currentIndex]].isTrainArrive[this.route[this.currentIndex]]){
-            Train.increase_passenger(this.route[this.currentIndex]);
-            Train.print_passenger();
-            this.currentIndex++;
-            console.log("여기서 탑니다.", this.path[this.currentIndex]);
-            this._stationList[this.path[this.currentIndex]].wait --;
-            this._model.visible = false;
-            this._rideOnTrain = true;
-          }
+        if (this.currentIndex + 1 == this.path.length) {
+          this._arriveAtEndStation = true;
+          this._stationList[this.path[this.currentIndex]].wait--;
+          this._previousTime = time * 0.001;
         }
       }
+      if (!this._arriveAtEndStation && this.currentIndex < this.route.length) {
+        if (
+          !this._rideOnTrain &&
+          this._stationList[this.path[this.currentIndex]].isTrainArrive[
+            this.route[this.currentIndex]
+          ]
+        ) {
+          Train.increase_passenger(this.route[this.currentIndex]);
+          Train.print_passenger();
+          this.currentIndex++;
+          console.log("여기서 탑니다.", this.path[this.currentIndex]);
+          this._stationList[this.path[this.currentIndex]].wait--;
+          this._model.visible = false;
+          this._rideOnTrain = true;
+        }
+      }
+    }
 
-
-    // if(this._rideOnTrain && this._stationList[this._endStationIndex].isTrainArrive[this.route[this.currentIndex]]){   
+    // if(this._rideOnTrain && this._stationList[this._endStationIndex].isTrainArrive[this.route[this.currentIndex]]){
     //   this._model.position.set(
     //     this._endStationPosition.x,
     //     this._endStationPosition.y,
@@ -439,17 +456,14 @@ export class NewNPC {
     //   this._previousTime = time * 0.001;
     // }
 
-
-
-
-    if(this._arriveAtEndStation && !this._arriveAtEndBuilding){
+    if (this._arriveAtEndStation && !this._arriveAtEndBuilding) {
       this.gotoendbuilding(time);
       // console.log("asdfasdfa");
     }
     if (this._arriveAtEndBuilding) {
       // 모델을 scene에서 제거합니다.
       this._scene.remove(this._model);
-    
+
       // 모델을 메모리에서 제거합니다.
       this._model.traverse((child) => {
         if (child instanceof THREE.Mesh) {
@@ -458,14 +472,13 @@ export class NewNPC {
           child.material.dispose();
         }
       });
-    
+
       // 모델 변수를 null로 설정하여 참조를 해제합니다.
       this._model = null;
       cancelAnimationFrame(this._AnimRequestFrame);
       return;
     }
-    
-    
+
     // console.log(this._stationList[this._nearStationIndex].isTrainArrive);
     this._AnimRequestFrame = requestAnimationFrame(this.render.bind(this));
   }

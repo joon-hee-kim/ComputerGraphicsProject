@@ -1,0 +1,11 @@
+Model Information:
+* title:	Ateneum Museum
+* source:	https://sketchfab.com/3d-models/ateneum-museum-4dabebb7ffb1413c97c2300db742ed1c
+* author:	bayuajisaputro598 (https://sketchfab.com/bayuajisaputro598)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Ateneum Museum" (https://sketchfab.com/3d-models/ateneum-museum-4dabebb7ffb1413c97c2300db742ed1c) by bayuajisaputro598 (https://sketchfab.com/bayuajisaputro598) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

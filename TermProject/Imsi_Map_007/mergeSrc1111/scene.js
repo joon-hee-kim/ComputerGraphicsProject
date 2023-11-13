@@ -4,7 +4,6 @@ import * as THREE from "../../build/three.module.js";
 import { GLTFLoader } from "../../examples/jsm/loaders/GLTFLoader.js";
 import { OrbitControls } from "../../examples/jsm/controls/OrbitControls.js";
 import { Sky } from "../../examples/jsm/objects/Sky.js";
-import { GUI } from "../../examples/jsm/libs/lil-gui.module.min.js";
 import { cameraTo2D } from "./cameraTo2D.js";
 import { MyCharacter } from "./myCharacter.js";
 import { NewNPC } from "./newNPC.js";
@@ -18,6 +17,7 @@ import { TREE } from "./Tree.js";
 import { STREETLIGHT } from "./StreetLight.js";
 import { FLOWER } from "./Flower.js";
 import { BENCH } from "./Bench.js";
+import { CLOUD } from "./Cloud.js";
 import { RAIL } from "./rail.js";
 import { ROTATE_RAIL } from "./rotateRail.js";
 import { ROAD_PACK } from "./road_pack.js";
@@ -133,13 +133,13 @@ export function createScene() {
         createStation(
           scene,
           offsetX + 30,
-          offsetY - 30,
+          offsetY - 40,
           StationList,
           stationIndex
         );
         stationIndex++;
 
-        for (let k = 0; k < 3; k++) {
+        for (let k = 0; k < 2; k++) {
           createBuilding(
             scene,
             offsetX + Xlist[k],
@@ -213,7 +213,7 @@ export function createScene() {
     createClouds(400, 100);
     createClouds(300, 50);
     createClouds(300, 0);
-    setTimeout(initCameraAnimation, 2000);
+    setTimeout(initCameraAnimation, 4000);
 
     setupLights(scene);
 
@@ -253,8 +253,6 @@ export function createScene() {
     myTrain_constructed.start();
     console.log(StationList);
     console.log(Train.get_pessenger());
-
-    //setInterval(handleNPCPlacement, 3000);
     // 여기에 다른 초기화 로직 추가 (도시 객체를 이용하여 씬 초기 상태 설정)
   }
   function initCameraAnimation() {
@@ -702,6 +700,7 @@ export function createScene() {
         leftButton.style.display = "none";
         rightButton.style.display = "none";
         myCharacter._start = true;
+        setInterval(handleNPCPlacement, 3000);
       }
     }
   }
@@ -760,7 +759,7 @@ export function createScene() {
     myCharacter._camera2D = camera2D;
     if (camera2D) {
       cameraTo2D(camera);
-      myCharacter._controls.target.set(200, 0, 200);
+      myCharacter._controls.target.set(100, 0, 100);
     } else {
       camera.position.set(
         myCharacter._model.position.x - 20,
