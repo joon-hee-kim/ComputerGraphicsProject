@@ -132,7 +132,7 @@ export function createScene() {
         const offsetY = j * citySize * 1 * 1.03; // 각 도시의 Y 오프셋 조절
         createStation(
           scene,
-          offsetX + 30,
+          offsetX + 37,
           offsetY - 40,
           StationList,
           stationIndex
@@ -1299,6 +1299,9 @@ export function createScene() {
     );
     NewNPC.NPC_count++; // NewNPC 내에서 정의된 static variable NPC_count. 총 생성된 npc 숫자를 나타냅니다
     myNPC.updateRailInfo(rail_info);
+    const npcCountElement = document.querySelector(".npcNum");
+    const currentNPCCount = NewNPC.NPC_count; // 현재 NPC 카운트 가져오기
+    npcCountElement.textContent = currentNPCCount; // HTML 요소 업데이트
   }
   function handleRemovePlacement(event) {
     // 마우스의 클릭 위치를 가져옴

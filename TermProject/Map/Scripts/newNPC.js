@@ -46,8 +46,8 @@ export class NewNPC {
 
     this.npcList.push(this);
 
-    this._AnimRequestFrame = requestAnimationFrame(this.render.bind(this));
     this._decideModelAndDecideRoot();
+    this._AnimRequestFrame = requestAnimationFrame(this.render.bind(this));
   }
 
   updateRailInfo(rail_info) {
@@ -128,7 +128,6 @@ export class NewNPC {
       this.canArriveAt = true;
       d[target].path.unshift(start);
       d[target].path.push(target);
-      console.log(d[target]);
       this.path = d[target].path;
       this.route = d[target].rail;
     }
@@ -155,9 +154,6 @@ export class NewNPC {
       Math.random() * this._buildingList.length
     );
     // this._startBuildingIndex = 2;
-    console.log(this._buildingList);
-    console.log(this._startBuildingIndex);
-    console.log(this._buildingList[this._startBuildingIndex].x);
     this._buildingPosition = new THREE.Vector3(
       this._buildingList[this._startBuildingIndex].x,
       0,
@@ -173,12 +169,10 @@ export class NewNPC {
         this._stationList[i].y
       );
       const distance = this._buildingPosition.distanceTo(stationPosition);
-      console.log(this._buildingPosition);
 
       if (distance < minDistanceToNearStation) {
         minDistanceToNearStation = distance;
         this._nearStationIndex = i;
-        console.log(i);
       }
     }
 
@@ -363,6 +357,7 @@ export class NewNPC {
         this._model.position,
         this._endBuildingPosition
       );
+      console.log(this._endBuildingPosition);
       // console.log(test);
       if (Math.abs(test.x) < 5.0 && Math.abs(test.z) < 5.0) {
         this._model.visible = false;
