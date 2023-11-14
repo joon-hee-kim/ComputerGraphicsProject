@@ -4,6 +4,11 @@ About  Computer Graphics lecture&amp;Graphics study
 **If you want to see our Term Project website, please enter TermProject file -> Map -> MainPage.html**
 <br/>
 
+### **Demo GIF**
+![graphicsTermProject](https://github.com/Pyeonseohee/ComputerGraphicsStudy/assets/58354506/cafdb242-283e-4a56-8fe1-820fd383cbbc)
+
+<br/>
+
 ## **Mini Metro TermProject**
 Gachon University 2023 Computer Graphics Term Project: Clone **Mini Metro Game** for WebGL with 2D&3D.
 
@@ -50,5 +55,3 @@ And not only light, but also skybox changes to express it realistically.
 This part utilized the open source shown in the webGL sample.
 
 Reference: https://threejs.org/examples/webgl_shaders_sky.html
-
-
