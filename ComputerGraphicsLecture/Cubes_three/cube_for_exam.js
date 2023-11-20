@@ -1,7 +1,7 @@
-var canvas;
 var gl;
+var canvas;
 
-var NumVertices = 36; // (3 * 12)
+var NumVertices = 3 * 12;
 
 var points = [];
 var colors = [];
@@ -12,25 +12,24 @@ var zAxis = 2;
 
 var axis = 0;
 var theta = [0, 0, 0];
-
+var time = 0;
 var thetaLoc;
+var timeLoc;
+var flag = true;
 
 window.onload = function init() {
   canvas = document.getElementById("gl-canvas");
-
   gl = WebGLUtils.setupWebGL(canvas);
   if (!gl) {
-    alert("WebGL isn't available");
+    alert("WebGL can't available");
   }
-
-  colorCube(); // 삼각형 vertex 지정해서 points array에 push하고 한 면의 색상을 지정해준 상태(아직 그리진 X)
 
   gl.viewport(0, 0, canvas.width, canvas.height);
   gl.clearColor(1.0, 1.0, 1.0, 1.0);
 
   gl.enable(gl.DEPTH_TEST);
 
-  ///////////////////////////////////////////////////////////
+  colorCube();
 
   var program = initShaders(gl, "vertex-shader", "fragment-shader");
   gl.useProgram(program);
@@ -52,22 +51,21 @@ window.onload = function init() {
   gl.enableVertexAttribArray(vPosition);
 
   thetaLoc = gl.getUniformLocation(program, "theta");
+  timeLoc = gl.getUniformLocation(program, "time");
 
-  //event listeners for buttons
-
-  document.getElementById("xButton").onclick = function () {
+  document.getElementById("x").onclick = function () {
     axis = xAxis;
-    render();
   };
-  document.getElementById("yButton").onclick = function () {
+  document.getElementById("y").onclick = function () {
     axis = yAxis;
-    render();
   };
-  document.getElementById("zButton").onclick = function () {
+  document.getElementById("z").onclick = function () {
     axis = zAxis;
-    render();
   };
 
+  document.getElementById("t").onclick = function () {
+    flag = !flag;
+  };
   render();
 };
 
@@ -103,33 +101,20 @@ function quad(a, b, c, d) {
     [1.0, 1.0, 1.0, 1.0], // white
   ];
 
-  // We need to parition the quad into two triangles in order for
-  // WebGL to be able to render it.  In this case, we create two
-  // triangles from the quad indices
+  var indices = [a, b, c, a, c, d];
 
-  //vertex color assigned by the index of the vertex
-
-  var indices = [a, b, c, a, c, d]; // 1 0 3, 1 3 2 // 4 5 6, 4 6 7 // ...
-
-  console.log(indices);
-
-  for (var i = 0; i < indices.length; ++i) {
+  for (let i = 0; i < indices.length; i++) {
     points.push(vertices[indices[i]]);
-    //colors.push( vertexColors[indices[i]] );
-
-    // for solid colored faces use
     colors.push(vertexColors[a]);
   }
 }
 
 function render() {
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
-  theta[axis] += 2.0;
-
+  if (flag) theta[axis] += 2.0;
   gl.uniform3fv(thetaLoc, theta);
-
+  time += 0.1;
+  gl.uniform1f(timeLoc, time);
   gl.drawArrays(gl.TRIANGLES, 0, NumVertices);
-
-  //requestAnimFrame( render );
+  requestAnimFrame(render);
 }
