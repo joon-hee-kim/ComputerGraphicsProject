@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <script id="vertex-shader" type="x-shader/x-vertex">
+            attribute vec4 vPosition;
+            attribute vec4 vNormal;
+
+            varying vec3 N, L, E;
+            varying float s, t;
+
+            uniform mat4 modelViewMatrix;
+            uniform mat4 projectionMatrix;
+            uniform vec4 lightPosition;
+
+            void main(){
+                vec3 pos = (modelViewMatrix * vPosition).xyz;
+
+                if(lightPosition.w == 0.0) L = normalize((modelViewMatrix * lightPosition).xyz);
+                else L = normalize((modelViewMatrix * lightPosition).xyz - pos);
+
+                E = -normalize(pos);
+                N = normalize(modelViewMatrix * vNormal).xyz;
+
+                float pi = acos(0.0);
+
+                s = 0.5 * acos(vPosition.x)/pi;
+                t = 0.5 * asin(vPosition.y / sqrt(1.0 - vPosition.x*vPosition.x))/pi;
+                gl_Position = projectionMatrix * modelViewMatrix * vPosition;
+            }
+        </script>
+
+        <script id="fragment-shader" type="x-shader/x-fragment">
+            precision highp float;
+
+            varying vec3 N, L, E;
+            varying float s, t;
+
+            uniform sampler2D texture;
+
+            uniform vec4 ambientProduct;
+            uniform vec4 diffuseProduct;
+            uniform vec4 specularProduct;
+            uniform float shininess;
+
+            void main(){
+                vec4 fColor;
+
+                vec3 H = normalize(L + E);
+
+                vec4 ambient = ambientProduct;
+                
+                float Cd = max(dot(L, N), 0.0);
+                vec4 diffuse = Cd * diffuseProduct;
+
+                float Cs = pow(max(dot(N, H), 0.0), shininess);
+                vec4 specular = Cs * specularProduct;
+
+                if(dot(L, N) < 0.0) specular = vec4(0.0, 0.0, 0.0, 1.0);
+
+                fColor = ambient + diffuse + specular;
+                fColor.a = 1.0;
+
+                vec4 textColor = texture2D(texture, vec2(s, t));
+                gl_FragColor = fColor * 0.5 + textColor * 0.5;
+            }
+        </script>
+
+        <script type="text/javascript" src="../Common/initShaders.js"></script>
+        <script type="text/javascript" src="../Common/webgl-utils.js"></script>
+        <script type="text/javascript" src="../Common/MV.js"></script>
+        <script type="text/javascript" src="./sphereTextureIllumination.js"></script>
+    </head>
+    <body>
+        ID: 201937453 NAME: 편서희
+        <br/>
+        <button id="Button0">Increase R</button>
+        <button id="Button1">Decrease R</button>
+        <p></p>
+        <button id="Button2">Increase Phi</button>
+        <button id="Button3">Decrease Phi</button>
+        <p></p>
+        <button id="Button4">Increase Subdivisions</button>
+        <button id="Button5">Decrease Subdivisions</button>
+        <br/>
+        <canvas id="gl-canvas" width="512" height="512">
+            Oops...
+        </canvas>
+        <img id="texImage" src="http://127.0.0.1::5501/SphereTextureIllumination/SA2011_black.gif" hidden></img>
+    </body>
+</html>
