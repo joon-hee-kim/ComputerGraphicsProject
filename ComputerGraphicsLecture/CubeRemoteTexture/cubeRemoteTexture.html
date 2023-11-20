@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+    <head>
+
+        <script id="vertex-shader" type="x-shader/x-vertex">
+            attribute vec4 vPosition;
+            attribute vec4 vColor;
+            attribute vec2 vTexCoord;
+
+            varying vec4 fColor;
+            varying vec2 fTexCoord;
+
+            uniform mat4 modelViewMatrix;
+
+            void main(){
+                fColor = vColor;
+                fTexCoord = vTexCoord;
+                gl_Position = modelViewMatrix * vPosition;
+            }
+        </script>
+
+        <script id="fragment-shader" type="x=shader/x-fragment">
+            precision mediump float;
+            varying vec4 fColor;
+            varying vec2 fTexCoord;
+
+            uniform sampler2D texture;
+            
+            void main(){
+                gl_FragColor = texture2D(texture, fTexCoord);
+            }
+        </script>
+        <script type="text/javascript" src="../Common/webgl-utils.js"></script>
+        <script type="text/javascript" src="../Common/initShaders.js"></script>
+        <script type="text/javascript" src="../Common/MV.js"></script>
+        <script type="text/javascript" src="./cubeRemoteTexture.js"></script>
+    </head>
+    <body>
+        <button id="x">Rotate X</button>
+        <button id="y">Rotate Y</button>
+        <button id="z">Rotate Z</button>
+        <canvas id="gl-canvas" width="512" height="512">
+            Oops..
+        </canvas>
+    </body>
+</html>
