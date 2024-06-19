@@ -55,3 +55,10 @@ And not only light, but also skybox changes to express it realistically.
 This part utilized the open source shown in the webGL sample.
 
 Reference: https://threejs.org/examples/webgl_shaders_sky.html
+
+### 👥 Team Member
+Kim Jooho </br>
+Kim Joonhee </br>
+Hwang Heeseong </br>
+Lee Yungyo </br>
+Pyeon Seohee </br>
